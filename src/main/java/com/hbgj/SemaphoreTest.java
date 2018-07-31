@@ -10,9 +10,6 @@ public class SemaphoreTest {
 
         final Semaphore semaphore=new Semaphore(5);
 
-
-
-
         ExecutorService service=Executors.newFixedThreadPool(20);
 
         for (int i = 0; i <20; i++) {
