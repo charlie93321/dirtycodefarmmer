@@ -7,13 +7,9 @@ import java.text.SimpleDateFormat
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
 import org.apache.spark.sql.hive.HiveContext
-import org.apache.spark.mllib.fpm.FPGrowth
-import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StructType, _}
 
 import scala.collection.{immutable, mutable}
-import scala.collection.mutable.{ArrayBuffer, ListBuffer}
-import scala.sys.process._
 /**
   * Created by lxb on 2017/6/30.
   * ResidentCity
