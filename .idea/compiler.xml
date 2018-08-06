@@ -9,8 +9,5 @@
         <module name="GroovyJscala" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="GroovyJscala" target="1.7" />
-    </bytecodeTargetLevel>
   </component>
 </project>

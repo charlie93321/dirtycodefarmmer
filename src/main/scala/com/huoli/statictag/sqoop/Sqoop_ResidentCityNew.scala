@@ -26,7 +26,7 @@ object Sqoop_ResidentCityNew {
     val hiveTableName=s"tmp_resident_city_$STATICS_DATE"
     insertTagTabTemp(mysqlTableName, hiveTableName)
     logger.info(" begin to rename  mysql   table  : "+dateFormat.format(new Date()))
-    renameTables("tag_resident_city_new")
+    renameTables(mysqlTableName)
     logger.info(" programe is end  : "+dateFormat.format(new Date()))
   }
 
