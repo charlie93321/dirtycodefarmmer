@@ -1,10 +1,11 @@
 package com.hbgj.test
-import org.apache.poi.hssf.usermodel.HSSFCell
-import org.apache.poi.hssf.usermodel.HSSFWorkbook
-import java.io.FileInputStream
-import java.io.IOException
+import java.io.{FileInputStream, IOException, InputStream}
 
 import org.apache.poi.ss.usermodel.Workbook
+import org.apache.poi.xssf.usermodel.XSSFWorkbook
+
+import scala.collection.mutable.ArrayBuffer
+
 /**
   * 读取excel 数据
   *
@@ -12,8 +13,17 @@ import org.apache.poi.ss.usermodel.Workbook
   */
 object ParseExcel {
 
+
+  val util=new JdbcUtil(
+    "jdbc:mysql://hdp:3306/etl?useSSL=false&useUnicode=true&characterEncoding=utf-8",
+    "etl","charlie")
+
+
   def main(args: Array[String]): Unit = {
     readExcel("D:\\zxy\\tempdir\\国际各航线区分表.xlsx");
+
+    util.release
+
 
 
   }
@@ -22,49 +32,55 @@ object ParseExcel {
 
 
   def readExcel(fileName: String): Unit = {
+    var input:InputStream=null
     try {
-      val input = new FileInputStream(fileName)
+       input = new FileInputStream(fileName)
       //建立输入流
       val wb:Workbook  =  new XSSFWorkbook(input)
-      val sheet = wb.getSheetAt(0)
-      //获得第一个表单
-      val rows = sheet.rowIterator //获得第一个表单的迭代器
-      while ( {
-        rows.hasNext
-      }) {
-        val row = rows.next //获得行数据
-        System.out.println("Row #" + row.getRowNum) //获得行号从0开始
 
-        val cells = row.cellIterator //获得第一行的迭代器
 
-        while (cells.hasNext) {
-          val cell = cells.next
-          println("Cell #" + cell.getColumnIndex)
-          cell.getCellType match { //根据cell中的类型来输出数据
-            case CellType.CELL_TYPE_NUMERIC =>
-                println(cell.getNumericCellValue)
 
-            case CellType.CELL_TYPE_STRING =>
-                 println(cell.getStringCellValue)
 
-            case CellType.CELL_TYPE_BOOLEAN =>
-                  println(cell.getBooleanCellValue)
+      /* doSheet(wb,0,"澳新")
+       doSheet(wb,1,"欧美")
+       doSheet(wb,2,"东南亚")
+       doSheet(wb,3,"日韩")*/
 
-            case CellType.CELL_TYPE_FORMULA =>
-                  println(cell.getCellFormula)
+       doSheet(wb,4,"中东")
 
-            case _ =>
-                   println("unsuported sell type")
-
-          }
-        }
-      }
     } catch {
       case ex: IOException =>
         ex.printStackTrace()
+    }finally {
+      input.close()
     }
   }
 
+  def doSheet(workbook: Workbook,sheetIndex: Int, sheetName: String): Unit ={
+    val sheet = workbook.getSheetAt(sheetIndex)
+    //获得第一个表单
+    val rows = sheet.rowIterator //获得第一个表单的迭代器
+    var rowIndex=1
+
+   val params:ArrayBuffer[(String,Object)]=new ArrayBuffer[(String,Object)]
+
+    while (rows.hasNext) {
+      val row = rows.next()
+       if(rowIndex!=1) {
+         println(s"analysis row $rowIndex")
+         val country=row.getCell(0)
+         val city=row.getCell(1)
+         val THREE_WORDS_CODE=row.getCell(3).getStringCellValue
+         params.+=(("STRING",THREE_WORDS_CODE))
+         params.+=(("STRING",city))
+         params.+=(("STRING",country))
+         params.+=(("STRING",sheetName))
+       }
+       rowIndex=rowIndex+1
+    }
+    util.executeBach("insert into tag_area values ( ?, ? , ? , ? ) ",params,4)
+
+  }
 }
 
 /**
